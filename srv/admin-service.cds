@@ -9,7 +9,8 @@ service AdminService {
   annotate Countries with @(readonly);
 
   entity Customers as projection on masterdata.Customers actions {
-    action archive()
+    @Common.IsActionCritical
+    action archive();
   };
 
   annotate Customers with @(

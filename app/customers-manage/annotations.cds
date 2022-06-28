@@ -58,6 +58,13 @@ annotate service.Customers with @(UI.LineItem : [
     },
 ]);
 
+annotate service.Customers with @(UI.Identification : [{
+    $Type       : 'UI.DataFieldForAction',
+    Action      : 'AdminService.archive',
+    Criticality : #Critical,
+    Label       : '{i18n>Archive}',
+}]);
+
 annotate service.Customers with @(UI.HeaderInfo : {
     TypeName       : '{i18n>Customer}',
     TypeNamePlural : '{i18n>Customers}',
