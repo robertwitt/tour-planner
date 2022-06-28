@@ -10,7 +10,7 @@ service AdminService {
 
   entity Customers as projection on masterdata.Customers actions {
     @Common.IsActionCritical
-    action archive();
+    action archive() returns Customers;
   };
 
   annotate Customers with @(

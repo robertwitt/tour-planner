@@ -139,14 +139,14 @@ describe("Admin service", () => {
     );
     expect(data.ID).to.not.equal(undefined);
     expect(data.isArchived).to.equal(false);
-    const { status } = await POST(
+    const {
+      status,
+      data: { isArchived },
+    } = await POST(
       `/admin/Customers(ID=${data.ID},IsActiveEntity=true)/archive`,
       {}
     );
-    expect(status).to.equal(204);
-    const {
-      data: { isArchived },
-    } = await GET`/admin/Customers(ID=${data.ID},IsActiveEntity=true)?$select=isArchived`;
+    expect(status).to.equal(200);
     expect(isArchived).to.equal(true);
   });
 
