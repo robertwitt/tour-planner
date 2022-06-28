@@ -6,17 +6,16 @@ using {
 service AdminService {
 
   entity Countries as projection on common.Countries;
-
-  annotate Countries with @(
-    odata.draft.enabled,
-    readonly
-  );
+  annotate Countries with @(readonly);
 
   entity Customers as projection on masterdata.Customers actions {
     action archive()
   };
 
-  annotate Customers with @(Capabilities.Deletable : false);
+  annotate Customers with @(
+    Capabilities.Deletable : false,
+    odata.draft.enabled,
+  );
 
   annotate Customers with {
     name1         @mandatory;
