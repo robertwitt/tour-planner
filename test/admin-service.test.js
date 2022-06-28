@@ -126,4 +126,31 @@ describe("Admin service", () => {
       await DELETE`/admin/Customers/20627858-46e5-4d15-88fd-286d15cbd193`;
     expect(status).to.equal(405);
   });
+
+  it("can archive customers", async () => {
+    const { data } = await POST("/admin/Customers", {
+      name1: "SAP",
+      isNaturalPerson: false,
+      mainAddress_country_code: "DE",
+      mainAddress_city: "Potsdam",
+      mainAddress_postalCode: "14469",
+      mainAddress_addressLine: "Konrad-Zuse-Ring 10",
+    });
+    expect(data.ID).to.not.equal(undefined);
+    expect(data.isArchived).to.equal(false);
+    const { status } = await POST(`/admin/Customers/${data.ID}/archive`, {});
+    expect(status).to.equal(204);
+    const {
+      data: { isArchived },
+    } = await GET`/admin/Customers/${data.ID}?$select=isArchived`;
+    expect(isArchived).to.equal(true);
+  });
+
+  it("fails archiving unknown customers", async () => {
+    const { status } = await POST(
+      "/admin/Customers/00000000-0000-0000-0000-000000000001/archive",
+      {}
+    );
+    expect(status).to.equal(404);
+  });
 });

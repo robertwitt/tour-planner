@@ -12,7 +12,10 @@ service AdminService {
     readonly
   );
 
-  entity Customers as projection on masterdata.Customers;
+  entity Customers as projection on masterdata.Customers actions {
+    action archive()
+  };
+
   annotate Customers with @(Capabilities.Deletable : false);
 
   annotate Customers with {
