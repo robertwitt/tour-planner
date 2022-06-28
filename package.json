@@ -10,6 +10,7 @@
     "express": "^4"
   },
   "devDependencies": {
+    "@sap/ux-specification": "^1.102.0",
     "axios": "^0.27.2",
     "chai": "^4.3.6",
     "chai-as-promised": "^7.1.1",
@@ -19,7 +20,8 @@
   },
   "scripts": {
     "start": "cds run",
-    "test": "jest"
+    "test": "jest",
+    "watch-customers-manage": "cds watch --open customers-manage/webapp/index.html?sap-ui-xx-viewCache=false"
   },
   "eslintConfig": {
     "extends": "eslint:recommended",
@@ -45,5 +47,8 @@
       "no-console": "off",
       "require-atomic-updates": "off"
     }
-  }
+  },
+  "sapux": [
+    "app/customers-manage"
+  ]
 }
