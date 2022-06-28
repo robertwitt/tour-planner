@@ -75,7 +75,8 @@
                 "sap.m": {},
                 "sap.ui.core": {},
                 "sap.ushell": {},
-                "sap.fe.templates": {}
+                "sap.fe.templates": {},
+                "sap.f": {}
             }
         },
         "contentDensities": {
@@ -108,17 +109,28 @@
             "css": []
         },
         "routing": {
-            "config": {},
+            "config": {
+                "flexibleColumnLayout": {
+                    "defaultTwoColumnLayoutType": "TwoColumnsBeginExpanded",
+                    "defaultThreeColumnLayoutType": "ThreeColumnsMidExpanded"
+                },
+                "routerClass": "sap.f.routing.Router"
+            },
             "routes": [
                 {
                     "pattern": ":?query:",
                     "name": "CustomersList",
-                    "target": "CustomersList"
+                    "target": [
+                        "CustomersList"
+                    ]
                 },
                 {
                     "pattern": "Customers({key}):?query:",
                     "name": "CustomersObjectPage",
-                    "target": "CustomersObjectPage"
+                    "target": [
+                        "CustomersList",
+                        "CustomersObjectPage"
+                    ]
                 }
             ],
             "targets": {
@@ -138,7 +150,9 @@
                                 }
                             }
                         }
-                    }
+                    },
+                    "controlAggregation": "beginColumnPages",
+                    "contextPattern": ""
                 },
                 "CustomersObjectPage": {
                     "type": "Component",
@@ -149,9 +163,17 @@
                             "editableHeaderContent": false,
                             "entitySet": "Customers"
                         }
-                    }
+                    },
+                    "controlAggregation": "midColumnPages",
+                    "contextPattern": "/Customers({key})"
                 }
             }
+        },
+        "rootView": {
+            "viewName": "sap.fe.templates.RootContainer.view.Fcl",
+            "type": "XML",
+            "async": true,
+            "id": "appRootView"
         }
     },
     "sap.fiori": {
