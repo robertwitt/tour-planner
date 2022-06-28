@@ -58,8 +58,13 @@ annotate service.Customers with @(UI.LineItem : [
     },
 ]);
 
+annotate service.Customers with @(UI.HeaderInfo : {
+    TypeName       : '{i18n>Customer}',
+    TypeNamePlural : '{i18n>Customers}',
+});
+
 annotate service.Customers with @(
-    UI.FieldGroup #GeneratedGroup1 : {
+    UI.FieldGroup #GeneralInformation : {
         $Type : 'UI.FieldGroupType',
         Data  : [
             {
@@ -76,7 +81,16 @@ annotate service.Customers with @(
             },
             {
                 $Type : 'UI.DataField',
-                Value : mainAddress_country_code,
+                Value : isArchived,
+            },
+        ],
+    },
+    UI.FieldGroup #MainAddress        : {
+        $Type : 'UI.FieldGroupType',
+        Data  : [
+            {
+                $Type : 'UI.DataField',
+                Value : mainAddress_addressLine,
             },
             {
                 $Type : 'UI.DataField',
@@ -88,11 +102,16 @@ annotate service.Customers with @(
             },
             {
                 $Type : 'UI.DataField',
-                Value : mainAddress_addressLine,
+                Value : mainAddress_country_code,
             },
+        ],
+    },
+    UI.FieldGroup #BillingAddress     : {
+        $Type : 'UI.FieldGroupType',
+        Data  : [
             {
                 $Type : 'UI.DataField',
-                Value : billingAddress_country_code,
+                Value : billingAddress_addressLine,
             },
             {
                 $Type : 'UI.DataField',
@@ -104,20 +123,37 @@ annotate service.Customers with @(
             },
             {
                 $Type : 'UI.DataField',
-                Value : billingAddress_addressLine,
-            },
-            {
-                $Type : 'UI.DataField',
-                Value : isArchived,
+                Value : billingAddress_country_code,
             },
         ],
     },
-    UI.Facets                      : [{
-        $Type  : 'UI.ReferenceFacet',
-        ID     : 'GeneratedFacet1',
-        Label  : '{i18n>GeneralInformation}',
-        Target : '@UI.FieldGroup#GeneratedGroup1',
-    }, ]
+    UI.Facets                         : [
+        {
+            $Type  : 'UI.ReferenceFacet',
+            ID     : 'GeneralInformation',
+            Label  : '{i18n>GeneralInformation}',
+            Target : '@UI.FieldGroup#GeneralInformation',
+        },
+        {
+            $Type  : 'UI.CollectionFacet',
+            Label  : '{i18n>Addresses}',
+            ID     : 'Addresses',
+            Facets : [
+                {
+                    $Type  : 'UI.ReferenceFacet',
+                    Label  : '{i18n>MainAddress}',
+                    ID     : 'MainAddress',
+                    Target : '@UI.FieldGroup#MainAddress',
+                },
+                {
+                    $Type  : 'UI.ReferenceFacet',
+                    Label  : '{i18n>BillingAddress}',
+                    ID     : 'BillingAddress',
+                    Target : '@UI.FieldGroup#BillingAddress',
+                },
+            ],
+        },
+    ]
 );
 
 annotate service.Customers with @(UI.SelectionFields : [
