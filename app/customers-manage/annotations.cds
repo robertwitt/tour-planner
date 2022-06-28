@@ -4,24 +4,57 @@ annotate service.Customers with @(UI.LineItem : [
     {
         $Type : 'UI.DataField',
         Value : name1,
+        Label : '{i18n>Name1}',
     },
     {
         $Type : 'UI.DataField',
         Value : name2,
+        Label : '{i18n>Name2}',
     },
     {
         $Type : 'UI.DataField',
         Value : isNaturalPerson,
+        Label : '{i18n>IsNaturalPerson}',
     },
     {
         $Type : 'UI.DataField',
-        Label : 'mainAddress_country_code',
         Value : mainAddress_country_code,
+        Label : '{i18n>MainAddressCountry}',
     },
     {
         $Type : 'UI.DataField',
-        Label : 'mainAddress_city',
         Value : mainAddress_city,
+        Label : '{i18n>MainAddressCity}',
+    },
+    {
+        $Type : 'UI.DataField',
+        Value : mainAddress_postalCode,
+        Label : '{i18n>MainAddressPostalCode}',
+    },
+    {
+        $Type : 'UI.DataField',
+        Value : mainAddress_addressLine,
+        Label : '{i18n>MainAddressAddressLine}',
+    },
+    {
+        $Type : 'UI.DataField',
+        Value : billingAddress_country_code,
+        Label : '{i18n>BillingAddressCountry}',
+    },
+    {
+        $Type : 'UI.DataField',
+        Value : billingAddress_city,
+        Label : '{i18n>BillingAddressCity}',
+    },
+    {
+        $Type : 'UI.DataField',
+        Value : billingAddress_postalCode,
+        Label : '{i18n>BillingAddressPostalCode}',
+    },
+    {
+        $Type : 'UI.DataField',
+        Value : billingAddress_addressLine,
+        Label : '{i18n>BillingAddressAddressLine}',
     },
 ]);
 
@@ -82,7 +115,7 @@ annotate service.Customers with @(
     UI.Facets                      : [{
         $Type  : 'UI.ReferenceFacet',
         ID     : 'GeneratedFacet1',
-        Label  : 'General Information',
+        Label  : '{i18n>GeneralInformation}',
         Target : '@UI.FieldGroup#GeneratedGroup1',
     }, ]
 );

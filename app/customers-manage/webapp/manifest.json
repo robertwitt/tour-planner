@@ -148,6 +148,25 @@
                                         "route": "CustomersObjectPage"
                                     }
                                 }
+                            },
+                            "initialLoad": "Enabled",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "columns": {
+                                        "DataField::billingAddress_country_code": {
+                                            "availability": "Adaptation"
+                                        },
+                                        "DataField::billingAddress_city": {
+                                            "availability": "Adaptation"
+                                        },
+                                        "DataField::billingAddress_postalCode": {
+                                            "availability": "Adaptation"
+                                        },
+                                        "DataField::billingAddress_addressLine": {
+                                            "availability": "Adaptation"
+                                        }
+                                    }
+                                }
                             }
                         }
                     },
