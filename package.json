@@ -1,60 +1,61 @@
 {
-  "name": "tour-planner",
-  "version": "1.0.0",
-  "description": "An application to plan tours for service workers.",
-  "repository": "github:robertwitt/tour-planner",
-  "license": "MIT",
-  "private": true,
-  "dependencies": {
-    "@sap/cds": "^5",
-    "@sap/xssec": "^3.2.13",
-    "express": "^4",
-    "hdb": "^0.19.0",
-    "passport": "^0.6.0"
-  },
-  "devDependencies": {
-    "@sap/ux-specification": "^1.102.0",
-    "axios": "^0.27.2",
-    "chai": "^4.3.6",
-    "chai-as-promised": "^7.1.1",
-    "chai-subset": "^1.6.0",
-    "jest": "^28.1.1",
-    "sqlite3": "^5.0.2"
-  },
-  "engines": {
-    "node": "^16"
-  },
-  "scripts": {
-    "start": "cds run",
-    "test": "jest",
-    "watch-customers-manage": "cds watch --open customers-manage/webapp/index.html?sap-ui-xx-viewCache=false"
-  },
-  "eslintConfig": {
-    "extends": "eslint:recommended",
-    "env": {
-      "es2020": true,
-      "node": true,
-      "jest": true,
-      "mocha": true
+    "name": "tour-planner",
+    "version": "1.0.0",
+    "description": "An application to plan tours for service workers.",
+    "repository": "github:robertwitt/tour-planner",
+    "license": "MIT",
+    "private": true,
+    "dependencies": {
+        "@sap/cds": "^5",
+        "@sap/xssec": "^3.2.13",
+        "express": "^4",
+        "hdb": "^0.19.0",
+        "passport": "^0.6.0"
     },
-    "globals": {
-      "SELECT": true,
-      "INSERT": true,
-      "UPDATE": true,
-      "DELETE": true,
-      "CREATE": true,
-      "DROP": true,
-      "CDL": true,
-      "CQL": true,
-      "CXL": true,
-      "cds": true
+    "devDependencies": {
+        "@sap/ux-specification": "^1.102.0",
+        "axios": "^0.27.2",
+        "chai": "^4.3.6",
+        "chai-as-promised": "^7.1.1",
+        "chai-subset": "^1.6.0",
+        "jest": "^28.1.1",
+        "sqlite3": "^5.0.2"
     },
-    "rules": {
-      "no-console": "off",
-      "require-atomic-updates": "off"
-    }
-  },
-  "sapux": [
-    "app/customers-manage"
-  ]
+    "engines": {
+        "node": "^16"
+    },
+    "scripts": {
+        "start": "cds run",
+        "test": "jest",
+        "watch-customers-manage": "cds watch --open customers-manage/webapp/index.html?sap-ui-xx-viewCache=false",
+        "undeploy": "cf undeploy tour-planner --delete-services --delete-service-keys"
+    },
+    "eslintConfig": {
+        "extends": "eslint:recommended",
+        "env": {
+            "es2020": true,
+            "node": true,
+            "jest": true,
+            "mocha": true
+        },
+        "globals": {
+            "SELECT": true,
+            "INSERT": true,
+            "UPDATE": true,
+            "DELETE": true,
+            "CREATE": true,
+            "DROP": true,
+            "CDL": true,
+            "CQL": true,
+            "CXL": true,
+            "cds": true
+        },
+        "rules": {
+            "no-console": "off",
+            "require-atomic-updates": "off"
+        }
+    },
+    "sapux": [
+        "app/customers-manage"
+    ]
 }
