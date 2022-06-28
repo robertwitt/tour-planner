@@ -15,9 +15,11 @@ class AdminService extends cds.ApplicationService {
 
       const db = await cds.connect.to("db");
       const dbEntities = db.entities("rwitt.tour.masterdata");
-      return db
+      await db
         .update(dbEntities.Customers, customers[0].ID)
         .set({ isArchived: true });
+
+      return this.read(Customers, customers[0].ID);
     });
 
     await super.init();

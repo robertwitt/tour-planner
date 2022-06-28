@@ -1,5 +1,6 @@
 const cds = require("@sap/cds/lib");
 const { GET, POST, DELETE, axios, expect } = cds.test(__dirname + "/..");
+const SAVE = (url) => POST(`${url}/draftActivate`);
 
 describe("Admin service", () => {
   let validateStatus;
@@ -52,7 +53,7 @@ describe("Admin service", () => {
   });
 
   it("can create new customers", async () => {
-    const { status, data } = await POST(`/admin/Customers`, {
+    const { data: draft } = await POST(`/admin/Customers`, {
       name1: "SAP",
       isNaturalPerson: false,
       mainAddress_country_code: "DE",
@@ -60,22 +61,10 @@ describe("Admin service", () => {
       mainAddress_postalCode: "14469",
       mainAddress_addressLine: "Konrad-Zuse-Ring 10",
     });
-    expect(status).to.equal(201);
-    expect(data.name1).to.equal("SAP");
-    expect(data.isNaturalPerson).to.equal(false);
-    expect(data.mainAddress_country_code).to.equal("DE");
-    expect(data.isArchived).to.equal(false);
-  });
-
-  it("can create new customers", async () => {
-    const { status, data } = await POST(`/admin/Customers`, {
-      name1: "SAP",
-      isNaturalPerson: false,
-      mainAddress_country_code: "DE",
-      mainAddress_city: "Potsdam",
-      mainAddress_postalCode: "14469",
-      mainAddress_addressLine: "Konrad-Zuse-Ring 10",
-    });
+    expect(draft.ID).to.not.equal(undefined);
+    const { status, data } = await SAVE(
+      `admin/Customers(ID=${draft.ID},IsActiveEntity=false)`
+    );
     expect(status).to.equal(201);
     expect(data).to.contain({
       name1: "SAP",
@@ -89,7 +78,7 @@ describe("Admin service", () => {
   });
 
   it("ignores readonly fields when creating customers", async () => {
-    const { status, data } = await POST(`/admin/Customers`, {
+    const { data: draft } = await POST(`/admin/Customers`, {
       name1: "SAP",
       isNaturalPerson: false,
       mainAddress_country_code: "DE",
@@ -98,6 +87,10 @@ describe("Admin service", () => {
       mainAddress_addressLine: "Konrad-Zuse-Ring 10",
       isArchived: true,
     });
+    expect(draft.ID).to.not.equal(undefined);
+    const { status, data } = await SAVE(
+      `admin/Customers(ID=${draft.ID},IsActiveEntity=false)`
+    );
     expect(status).to.equal(201);
     expect(data).to.contain({
       name1: "SAP",
@@ -110,25 +103,29 @@ describe("Admin service", () => {
     });
   });
 
-  it("canot create customers with missing mandatory properties", async () => {
-    const { status } = await POST(`/admin/Customers`, {
+  it("cannot create customers with missing mandatory properties", async () => {
+    const { data: draft } = await POST(`/admin/Customers`, {
       name1: "SAP",
       isNaturalPerson: false,
       mainAddress_city: "Potsdam",
       mainAddress_postalCode: "14469",
       mainAddress_addressLine: "Konrad-Zuse-Ring 10",
     });
+    expect(draft.ID).to.not.equal(undefined);
+    const { status } = await SAVE(
+      `admin/Customers(ID=${draft.ID},IsActiveEntity=false)`
+    );
     expect(status).to.equal(400);
   });
 
   it("cannot delete customers", async () => {
     const { status } =
-      await DELETE`/admin/Customers/20627858-46e5-4d15-88fd-286d15cbd193`;
+      await DELETE`/admin/Customers(ID=20627858-46e5-4d15-88fd-286d15cbd193,IsActiveEntity=true)`;
     expect(status).to.equal(405);
   });
 
   it("can archive customers", async () => {
-    const { data } = await POST("/admin/Customers", {
+    const { data: draft } = await POST("/admin/Customers", {
       name1: "SAP",
       isNaturalPerson: false,
       mainAddress_country_code: "DE",
@@ -136,19 +133,26 @@ describe("Admin service", () => {
       mainAddress_postalCode: "14469",
       mainAddress_addressLine: "Konrad-Zuse-Ring 10",
     });
+    expect(draft.ID).to.not.equal(undefined);
+    const { data } = await SAVE(
+      `admin/Customers(ID=${draft.ID},IsActiveEntity=false)`
+    );
     expect(data.ID).to.not.equal(undefined);
     expect(data.isArchived).to.equal(false);
-    const { status } = await POST(`/admin/Customers/${data.ID}/archive`, {});
-    expect(status).to.equal(204);
     const {
+      status,
       data: { isArchived },
-    } = await GET`/admin/Customers/${data.ID}?$select=isArchived`;
+    } = await POST(
+      `/admin/Customers(ID=${data.ID},IsActiveEntity=true)/archive`,
+      {}
+    );
+    expect(status).to.equal(200);
     expect(isArchived).to.equal(true);
   });
 
   it("fails archiving unknown customers", async () => {
     const { status } = await POST(
-      "/admin/Customers/00000000-0000-0000-0000-000000000001/archive",
+      "/admin/Customers(ID=00000000-0000-0000-0000-000000000001,IsActiveEntity=true)/archive",
       {}
     );
     expect(status).to.equal(404);
