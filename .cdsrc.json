@@ -1,4 +1,16 @@
 {
+  "requires": {
+    "db": {
+      "kind": "sql"
+    },
+    "uaa": {
+      "kind": "xsuaa",
+      "credentials": {}
+    }
+  },
+  "hana": {
+    "deploy-format": "hdbtable"
+  },
   "[development]": {
     "auth": {
       "passport": {

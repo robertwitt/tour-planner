@@ -1,0 +1,19 @@
+{
+  "scopes": [
+    {
+      "name": "$XSAPPNAME.TourPlanner",
+      "description": "TourPlanner"
+    }
+  ],
+  "attributes": [],
+  "role-templates": [
+    {
+      "name": "TourPlanner",
+      "description": "generated",
+      "scope-references": [
+        "$XSAPPNAME.TourPlanner"
+      ],
+      "attribute-references": []
+    }
+  ]
+}
