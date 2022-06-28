@@ -1,10 +1,10 @@
 namespace rwitt.tour.masterdata;
 
 using {
-  Country,
   cuid,
   managed
 } from '@sap/cds/common';
+using {rwitt.tour.common.Country} from './common';
 
 entity Customers : cuid, managed {
   name1           : String(40);
