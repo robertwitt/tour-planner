@@ -2,6 +2,12 @@ const cds = require("@sap/cds/lib");
 const { GET, POST, DELETE, axios, expect } = cds.test(__dirname + "/..");
 const SAVE = (url) => POST(`${url}/draftActivate`);
 
+if (cds.User.default) {
+  cds.User.default = cds.User.Privileged;
+} else {
+  cds.User = cds.User.Privileged;
+}
+
 describe("Admin service", () => {
   let validateStatus;
 
