@@ -5,6 +5,16 @@ class AdminService extends cds.ApplicationService {
     const { Customers } = this.entities;
 
     /**
+     * Set the mandatory `isNaturalPerson` flag to `false` before creating a new customer (by activating the draft).
+     * Otherwise this can lead to errors.
+     */
+    this.before("CREATE", Customers, (req) => {
+      if (req.data.isNaturalPerson === null) {
+        req.data.isNaturalPerson = false;
+      }
+    });
+
+    /**
      * POST /Customers/{id}/archive
      */
     this.on("archive", Customers, async (req) => {
