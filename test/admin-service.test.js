@@ -1,5 +1,7 @@
+const { DateTime } = require("luxon");
 const cds = require("@sap/cds/lib");
-const { GET, POST, DELETE, axios, expect } = cds.test(__dirname + "/..");
+const { GET, POST, PATCH, DELETE, axios, expect } = cds.test(__dirname + "/..");
+const EDIT = (url) => POST(`${url}/draftEdit`, {});
 const SAVE = (url) => POST(`${url}/draftActivate`);
 
 if (cds.User.default) {
@@ -162,5 +164,172 @@ describe("Admin service", () => {
       {}
     );
     expect(status).to.equal(404);
+  });
+
+  it("can create workers", async () => {
+    const { data: draft } = await POST(`/admin/Workers`, {
+      ID: "A",
+      lastName: "Doe",
+      firstName: "Jane",
+      startDate: "2022-01-01",
+      endDate: "2025-10-31",
+    });
+    expect(draft.ID).to.not.equal(undefined);
+    const { status, data } = await SAVE(
+      `admin/Workers(ID='${draft.ID}',IsActiveEntity=false)`
+    );
+    expect(status).to.equal(201);
+    expect(data).to.contain({
+      ID: "A",
+      lastName: "Doe",
+      firstName: "Jane",
+      startDate: "2022-01-01",
+      endDate: "2025-10-31",
+    });
+  });
+
+  it("can create workers with default dates", async () => {
+    const { data: draft } = await POST(`/admin/Workers`, {
+      ID: "B",
+      lastName: "Doe",
+      firstName: "Jane",
+    });
+    expect(draft.ID).to.not.equal(undefined);
+    const { status, data } = await SAVE(
+      `admin/Workers(ID='${draft.ID}',IsActiveEntity=false)`
+    );
+    expect(status).to.equal(201);
+    expect(data).to.contain({
+      ID: "B",
+      lastName: "Doe",
+      firstName: "Jane",
+      startDate: DateTime.now().toISODate(),
+      endDate: "9999-12-31",
+    });
+  });
+
+  it("cannot create workers where end is before start date", async () => {
+    const { data: draft } = await POST(`/admin/Workers`, {
+      ID: "C",
+      lastName: "Doe",
+      startDate: "2022-01-01",
+      endDate: "2021-10-31",
+    });
+    expect(draft.ID).to.not.equal(undefined);
+    const { status } = await SAVE(
+      `admin/Workers(ID='${draft.ID}',IsActiveEntity=false)`
+    );
+    expect(status).to.equal(400);
+  });
+
+  it("can create workers only for one day", async () => {
+    const { data: draft } = await POST(`/admin/Workers`, {
+      ID: "D",
+      lastName: "Doe",
+      startDate: "2022-06-30",
+      endDate: "2025-06-30",
+    });
+    expect(draft.ID).to.not.equal(undefined);
+    const { status, data } = await SAVE(
+      `admin/Workers(ID='${draft.ID}',IsActiveEntity=false)`
+    );
+    expect(status).to.equal(201);
+    expect(data).to.contain({
+      ID: "D",
+      lastName: "Doe",
+      startDate: "2022-06-30",
+      endDate: "2025-06-30",
+    });
+  });
+
+  it("can create workers with end date and default start date", async () => {
+    const { data: draft } = await POST(`/admin/Workers`, {
+      ID: "E",
+      lastName: "Doe",
+      endDate: "2022-01-30",
+    });
+    expect(draft.ID).to.not.equal(undefined);
+    const { status, data } = await SAVE(
+      `admin/Workers(ID='${draft.ID}',IsActiveEntity=false)`
+    );
+    expect(status).to.equal(201);
+    expect(data).to.contain({
+      ID: "E",
+      lastName: "Doe",
+      startDate: "2022-01-30",
+      endDate: "2022-01-30",
+    });
+  });
+
+  it("can update workers' end dates", async () => {
+    await POST(`/admin/Workers`, {
+      ID: "F",
+      lastName: "Doe",
+    });
+    await SAVE(`admin/Workers(ID='F',IsActiveEntity=false)`);
+
+    await EDIT(`/admin/Workers(ID='F',IsActiveEntity=true)`);
+    await PATCH(`/admin/Workers(ID='F',IsActiveEntity=false)`, {
+      endDate: "2099-12-30",
+    });
+    const {
+      status,
+      data: { endDate },
+    } = await SAVE(`admin/Workers(ID='F',IsActiveEntity=false)`);
+    expect(status).to.equal(201);
+    expect(endDate).to.equal("2099-12-30");
+  });
+
+  it("can update workers' start dates", async () => {
+    await POST(`/admin/Workers`, {
+      ID: "G",
+      lastName: "Doe",
+    });
+    await SAVE(`admin/Workers(ID='G',IsActiveEntity=false)`);
+
+    await EDIT(`/admin/Workers(ID='G',IsActiveEntity=true)`);
+    await PATCH(`/admin/Workers(ID='G',IsActiveEntity=false)`, {
+      startDate: "2022-06-01",
+    });
+    const {
+      status,
+      data: { startDate },
+    } = await SAVE(`admin/Workers(ID='G',IsActiveEntity=false)`);
+    expect(status).to.equal(201);
+    expect(startDate).to.equal("2022-06-01");
+  });
+
+  it("cannot update workers' end dates before start dates", async () => {
+    await POST(`/admin/Workers`, {
+      ID: "H",
+      lastName: "Doe",
+      startDate: "2022-06-15",
+      endDate: "2022-06-30",
+    });
+    await SAVE(`admin/Workers(ID='H',IsActiveEntity=false)`);
+
+    await EDIT(`/admin/Workers(ID='H',IsActiveEntity=true)`);
+    await PATCH(`/admin/Workers(ID='H',IsActiveEntity=false)`, {
+      endDate: "2022-05-10",
+    });
+    const { status } = await SAVE(`admin/Workers(ID='H',IsActiveEntity=false)`);
+    expect(status).to.equal(400);
+  });
+
+  it("cannot update workers' start dates after end dates", async () => {
+    await POST(`/admin/Workers`, {
+      ID: "I",
+      lastName: "Doe",
+      startDate: "2022-06-15",
+      endDate: "2022-06-30",
+    });
+    await SAVE(`admin/Workers(ID='I',IsActiveEntity=false)`);
+
+    await EDIT(`/admin/Workers(ID='I',IsActiveEntity=true)`);
+    await PATCH(`/admin/Workers(ID='I',IsActiveEntity=false)`, {
+      startDate: "2022-07-10",
+    });
+    const { status } = await SAVE(`admin/Workers(ID='I',IsActiveEntity=false)`);
+    expect(status).to.equal(400);
   });
 });
