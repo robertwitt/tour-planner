@@ -1,2 +1,3 @@
-using from './common.cds';
-using from './customer.cds';
+using from './common';
+using from './customer';
+using from './worker';
