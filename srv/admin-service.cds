@@ -29,6 +29,17 @@ service AdminService {
     isArchived    @readonly;
   }
 
+  entity Workers   as projection on masterdata.Workers;
+
+  annotate Workers with @(
+    Capabilities.Deletable : false,
+    odata.draft.enabled,
+  );
+
+  annotate Workers with {
+    lastName @mandatory;
+  };
+
 }
 
 annotate AdminService with @(requires : ['TourPlanner']);
