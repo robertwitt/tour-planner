@@ -30,3 +30,5 @@ service AdminService {
   }
 
 }
+
+annotate AdminService with @(requires : ['TourPlanner']);

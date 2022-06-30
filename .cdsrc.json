@@ -1,1 +1,16 @@
-{}
+{
+  "[development]": {
+    "auth": {
+      "passport": {
+        "strategy": "mock",
+        "users": {
+          "tour-planner@example.com": {
+            "password": "initial",
+            "ID": "tour-planner@example.com",
+            "roles": ["TourPlanner"]
+          }
+        }
+      }
+    }
+  }
+}

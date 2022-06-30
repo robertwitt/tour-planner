@@ -7,7 +7,10 @@
   "private": true,
   "dependencies": {
     "@sap/cds": "^5",
-    "express": "^4"
+    "@sap/xssec": "^3.2.13",
+    "express": "^4",
+    "hdb": "^0.19.0",
+    "passport": "^0.6.0"
   },
   "devDependencies": {
     "@sap/ux-specification": "^1.102.0",
@@ -18,10 +21,14 @@
     "jest": "^28.1.1",
     "sqlite3": "^5.0.2"
   },
+  "engines": {
+    "node": "^16"
+  },
   "scripts": {
     "start": "cds run",
     "test": "jest",
-    "watch-customers-manage": "cds watch --open customers-manage/webapp/index.html?sap-ui-xx-viewCache=false"
+    "watch-customers-manage": "cds watch --open customers-manage/webapp/index.html?sap-ui-xx-viewCache=false",
+    "undeploy": "cf undeploy tour-planner --delete-services --delete-service-keys"
   },
   "eslintConfig": {
     "extends": "eslint:recommended",
@@ -50,5 +57,19 @@
   },
   "sapux": [
     "app/customers-manage"
-  ]
+  ],
+  "cds": {
+    "requires": {
+      "db": {
+        "kind": "sql"
+      },
+      "uaa": {
+        "kind": "xsuaa",
+        "credentials": {}
+      }
+    },
+    "hana": {
+      "deploy-format": "hdbtable"
+    }
+  }
 }

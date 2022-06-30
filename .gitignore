@@ -17,6 +17,11 @@ target/
 *.mtar
 mta_archives/
 
+# UI
+dist/
+resources/
+app/*/package-lock.json
+
 # Other
 **/.DS_Store
 *.orig
