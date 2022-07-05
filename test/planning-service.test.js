@@ -87,7 +87,7 @@ describe("Planning service", () => {
   });
 
   it("cannot filter visit by duration", async () => {
-    const { status } = await GET`/planning/Visit?$filter=duration gt 1`;
+    const { status } = await GET`/planning/Visits?$filter=duration gt 1`;
     expect(status).to.equal(400);
   });
 
@@ -138,7 +138,7 @@ describe("Planning service", () => {
     const { data } =
       await GET`/planning/Tours(ID=6466ef4a-fc3d-11ec-b939-0242ac120002,IsActiveEntity=true)?$expand=stops`;
     expect(data).to.contain({
-      tourDate: "2022-07-22",
+      tourDate: "2022-07-06",
       stops: [
         { counter: 1, visit_ID: "42619951-0e05-45cc-b7cc-025674309164" },
         { counter: 2, visit_ID: "4841bc74-d95b-4721-922c-cfa64bd7604d" },
