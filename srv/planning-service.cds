@@ -7,7 +7,10 @@ service PlanningService {
     virtual formattedAddress : String;
   };
 
-  entity Customers         as projection on db.masterdata.Customers excluding {
+  entity Customers         as projection on db.masterdata.Customers {
+    *,
+    mainAddress.country.name as mainAddress_country_name
+  } excluding {
     billingAddress,
     isArchived,
     createdAt,

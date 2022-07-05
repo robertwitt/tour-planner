@@ -36,8 +36,8 @@ describe("Planning service", () => {
       await GET`/planning/Customers?$select=formattedAddress`;
     expect(status).to.equal(200);
     expect(data.value).to.containSubset([
-      { formattedName: "Georg-Hermann-Allee 99, 14469 Potsdam, Germany" },
-      { formattedName: "Konrad-Zuse-Ring 10, 14469 Potsdam, Germany" },
+      { formattedAddress: "Georg-Hermann-Allee 99, 14469 Potsdam, Germany" },
+      { formattedAddress: "Konrad-Zuse-Ring 10, 14469 Potsdam, Germany" },
     ]);
   });
 

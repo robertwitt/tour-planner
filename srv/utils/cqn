@@ -1,8 +1,8 @@
 function isProjected(columns, column) {
-  if (!column || column[0] === "*") {
+  if (!columns || columns[0] === "*") {
     return true;
   }
-  return columns.some((c) => c.ref[0] === column);
+  return columns.some((c) => (c.ref && c.ref[0] === column) || c.as === column);
 }
 
 module.exports = { isProjected };
