@@ -32,10 +32,10 @@ class PlanningService extends cds.ApplicationService {
      */
     this.after("READ", Customers, (results, req) => {
       if (isProjected(req.query.SELECT.columns, "formattedName")) {
-        this._setCustomerFormattedName(results, req.query);
+        this._setCustomerName(results, req.query);
       }
-      if (isProjected(req.query.SELECT.columns, "formattedAddress")) {
-        this._setCustomerFormattedAddress(results, req.query);
+      if (isProjected(req.query.SELECT.columns, "mainAddress_formatted")) {
+        this._setCustomerAddress(results, req.query);
       }
     });
 
@@ -44,7 +44,7 @@ class PlanningService extends cds.ApplicationService {
      */
     this.after("READ", Workers, (results, req) => {
       if (isProjected(req.query.SELECT.columns, "formattedName")) {
-        this._setWorkerFormattedName(results, req.query);
+        this._setWorkerName(results, req.query);
       }
     });
 
@@ -57,7 +57,7 @@ class PlanningService extends cds.ApplicationService {
     }
   }
 
-  _setCustomerFormattedName(customers, query) {
+  _setCustomerName(customers, query) {
     this._setComputedProperty("formattedName", customers, query, (c) => {
       if (c.isNaturalPerson) {
         c.formattedName = new StringBuilder()
@@ -73,22 +73,27 @@ class PlanningService extends cds.ApplicationService {
     });
   }
 
-  _setCustomerFormattedAddress(customers, query) {
-    this._setComputedProperty("formattedAddress", customers, query, (c) => {
-      c.formattedAddress = new StringBuilder()
-        .add(c.mainAddress_addressLine)
-        .add(
-          new StringBuilder()
-            .add(c.mainAddress_postalCode)
-            .add(c.mainAddress_city)
-            .build(" ")
-        )
-        .add(c.mainAddress_country_name)
-        .build(", ");
-    });
+  _setCustomerAddress(customers, query) {
+    this._setComputedProperty(
+      "mainAddress_formatted",
+      customers,
+      query,
+      (c) => {
+        c.mainAddress_formatted = new StringBuilder()
+          .add(c.mainAddress_addressLine)
+          .add(
+            new StringBuilder()
+              .add(c.mainAddress_postalCode)
+              .add(c.mainAddress_city)
+              .build(" ")
+          )
+          .add(c.mainAddress_country_name)
+          .build(", ");
+      }
+    );
   }
 
-  _setWorkerFormattedName(workers, query) {
+  _setWorkerName(workers, query) {
     this._setComputedProperty("formattedName", workers, query, (w) => {
       w.formattedName = new StringBuilder()
         .add(w.firstName)

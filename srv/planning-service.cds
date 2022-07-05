@@ -3,8 +3,8 @@ using {rwitt.tour as db} from '../db';
 service PlanningService {
 
   extend db.masterdata.Customers with {
-    virtual formattedName    : String;
-    virtual formattedAddress : String;
+    virtual formattedName         : String;
+    virtual mainAddress_formatted : String;
   };
 
   entity Customers         as projection on db.masterdata.Customers {
