@@ -50,6 +50,7 @@ service PlanningService {
     visitDate @mandatory;
     startTime @mandatory;
     endTime   @mandatory;
+    duration  @readonly;
     status    @readonly;
   };
 

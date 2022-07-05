@@ -1,5 +1,5 @@
 const cds = require("@sap/cds/lib");
-const { GET, POST, axios, expect } = cds.test(__dirname + "/..");
+const { GET, POST, PATCH, DELETE, axios, expect } = cds.test(__dirname + "/..");
 const EDIT = (url) => POST(`${url}/draftEdit`, {});
 const SAVE = (url) => POST(`${url}/draftActivate`);
 
@@ -21,7 +21,7 @@ describe("Planning service", () => {
     axios.defaults.validateStatus = validateStatus;
   });
 
-  it("returns customer name", async () => {
+  it("returns customers with name", async () => {
     const { status, data } =
       await GET`/planning/Customers?$select=formattedName`;
     expect(status).to.equal(200);
@@ -31,7 +31,7 @@ describe("Planning service", () => {
     ]);
   });
 
-  it("returns customer address", async () => {
+  it("returns customers with address", async () => {
     const { status, data } =
       await GET`/planning/Customers?$select=formattedAddress`;
     expect(status).to.equal(200);
@@ -41,64 +41,118 @@ describe("Planning service", () => {
     ]);
   });
 
-  it("returns worker name", async () => {
+  it("returns workers with name", async () => {
     const { status, data } = await GET`/planning/Workers?$select=formattedName`;
     expect(status).to.equal(200);
     expect(data.value).to.containSubset([{ formattedName: "John Doe" }]);
   });
 
-  it("returns visit duration", async () => {
-    const { status, data } = await GET`/planning/Visits`;
-    expect(status).to.equal(200);
-    expect(data.value).to.containSubset([
-      {
-        visitDate: "2022-07-06",
-        startTime: "08:00:00",
-        endTime: "11:00:00",
-        duration: 3.0,
-      },
-    ]);
+  it("can create visits with computed duration", async () => {
+    const { data: draft } = await POST(`/planning/Visits`, {
+      customer_ID: "20627858-46e5-4d15-88fd-286d15cbd193",
+      visitDate: "2022-08-03",
+      startTime: "08:00:00",
+      endTime: "10:30:00",
+    });
+    expect(draft.ID).to.not.equal(undefined);
+    const { status, data } = await SAVE(
+      `/planning/Visits(ID=${draft.ID},IsActiveEntity=false)`
+    );
+    expect(status).to.equal(201);
+    expect(data).to.contain({
+      customer_ID: "20627858-46e5-4d15-88fd-286d15cbd193",
+      visitDate: "2022-08-03",
+      startTime: "08:00:00",
+      endTime: "10:30:00",
+      duration: 2.5,
+      status_code: "O",
+    });
   });
 
-  it("returns visit duration with partial selection", async () => {
-    const { status, data } =
-      await GET`/planning/Visits?$select=startTime,duration`;
-    expect(status).to.equal(200);
-    expect(data.value).to.containSubset([
-      { startTime: "08:00:00", duration: 3.0 },
-    ]);
-  });
-
-  it("returns expanded visit", async () => {
-    const { status, data } =
-      await GET`/planning/Tours(ID=6466ef4a-fc3d-11ec-b939-0242ac120002,IsActiveEntity=true)/stops?$expand=visit`;
-    expect(status).to.equal(200);
-    expect(data.value).to.containSubset([
-      {
-        counter: 1,
-        visit: {
-          visitDate: "2022-07-06",
-          startTime: "08:00:00",
-          endTime: "11:00:00",
-          duration: 3.0,
-        },
-      },
-    ]);
-  });
-
-  it("cannot filter visit by duration", async () => {
-    const { status } = await GET`/planning/Visits?$filter=duration gt 1`;
+  it("cannot create visits with end time lower than start time", async () => {
+    const { data: draft } = await POST(`/planning/Visits`, {
+      customer_ID: "20627858-46e5-4d15-88fd-286d15cbd193",
+      visitDate: "2022-08-03",
+      startTime: "11:00:00",
+      endTime: "10:30:00",
+    });
+    expect(draft.ID).to.not.equal(undefined);
+    const { status } = await SAVE(
+      `/planning/Visits(ID=${draft.ID},IsActiveEntity=false)`
+    );
     expect(status).to.equal(400);
   });
 
-  it("cannot update completed visit", async () => {
+  it("can update duration of visits", async () => {
+    const { data: draft } = await POST(`/planning/Visits`, {
+      customer_ID: "20627858-46e5-4d15-88fd-286d15cbd193",
+      visitDate: "2022-08-03",
+      startTime: "08:00:00",
+      endTime: "10:30:00",
+    });
+    await SAVE(`/planning/Visits(ID=${draft.ID},IsActiveEntity=false)`);
+    await EDIT(`/planning/Visits(ID=${draft.ID},IsActiveEntity=true)`);
+    await PATCH(`/planning/Visits(ID=${draft.ID},IsActiveEntity=false)`, {
+      startTime: "11:00:00",
+      endTime: "14:00:00",
+    });
+    const {
+      status,
+      data: { duration },
+    } = await SAVE(`/planning/Visits(ID=${draft.ID},IsActiveEntity=false)`);
+    expect(status).to.equal(201);
+    expect(duration).to.equal(3.0);
+  });
+
+  it("can update end time of visits", async () => {
+    const { data: draft } = await POST(`/planning/Visits`, {
+      customer_ID: "20627858-46e5-4d15-88fd-286d15cbd193",
+      visitDate: "2022-08-03",
+      startTime: "08:00:00",
+      endTime: "10:30:00",
+    });
+    await SAVE(`/planning/Visits(ID=${draft.ID},IsActiveEntity=false)`);
+    await EDIT(`/planning/Visits(ID=${draft.ID},IsActiveEntity=true)`);
+    await PATCH(`/planning/Visits(ID=${draft.ID},IsActiveEntity=false)`, {
+      startTime: "11:00:00",
+    });
+    const {
+      status,
+      data: { endTime },
+    } = await SAVE(`/planning/Visits(ID=${draft.ID},IsActiveEntity=false)`);
+    expect(status).to.equal(201);
+    expect(endTime).to.equal("13:30:00");
+  });
+
+  it("cannot update completed visits", async () => {
     const { status } = await EDIT(
       `/planning/Visits(ID=e79acf91-8eda-4fb7-9360-c1e5cf8a69ca,IsActiveEntity=true)`
     );
     expect(status).to.equal(400);
   });
 
-  it("can create tour with tour stops", async () => {
+  it("can delete visits", async () => {
+    const { data: draft } = await POST(`/planning/Visits`, {
+      customer_ID: "20627858-46e5-4d15-88fd-286d15cbd193",
+      visitDate: "2022-08-03",
+      startTime: "08:00:00",
+      endTime: "10:30:00",
+    });
+    await SAVE(`/planning/Visits(ID=${draft.ID},IsActiveEntity=false)`);
+    const { status } = await DELETE(
+      `/planning/Visits(ID=${draft.ID},IsActiveEntity=true)`
+    );
+    expect(status).to.equal(204);
+  });
+
+  it("cannot delete completed visits", async () => {
+    const { status } = await DELETE(
+      `/planning/Visits(ID=e79acf91-8eda-4fb7-9360-c1e5cf8a69ca,IsActiveEntity=true)`
+    );
+    expect(status).to.equal(400);
+  });
+
+  it("can create tours with stops", async () => {
     const { data: draft } = await POST(`/planning/Tours`, {
       worker_ID: "JD",
       tourDate: "2022-07-22",
@@ -123,7 +177,7 @@ describe("Planning service", () => {
     });
   });
 
-  it("can add stop to existing tour", async () => {
+  it("can add stop to existing tours", async () => {
     await EDIT(
       `/planning/Tours(ID=6466ef4a-fc3d-11ec-b939-0242ac120002,IsActiveEntity=true)`
     );
