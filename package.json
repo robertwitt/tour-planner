@@ -29,7 +29,8 @@
     "start": "cds run",
     "test": "jest",
     "watch-customers-manage": "cds watch --open customers-manage/webapp/index.html?sap-ui-xx-viewCache=false",
-    "undeploy": "cf undeploy tour-planner --delete-services --delete-service-keys"
+    "undeploy": "cf undeploy tour-planner --delete-services --delete-service-keys",
+    "watch-workers-manage": "cds watch --open workers-manage/webapp/index.html?sap-ui-xx-viewCache=false"
   },
   "eslintConfig": {
     "extends": "eslint:recommended",
@@ -57,7 +58,8 @@
     }
   },
   "sapux": [
-    "app/customers-manage"
+    "app/customers-manage",
+    "app/workers-manage"
   ],
   "cds": {
     "requires": {
