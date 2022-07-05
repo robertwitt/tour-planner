@@ -75,9 +75,23 @@ modules:
             - rwitttourcustomersmanage.zip
           name: rwitttourcustomersmanage
           target-path: resources/
+        - artifacts:
+            - rwitttourworkersmanage.zip
+          name: rwitttourworkersmanage
+          target-path: resources/
   - name: rwitttourcustomersmanage
     type: html5
     path: app/customers-manage
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm install
+        - npm run build:cf
+      supported-platforms: []
+  - name: rwitttourworkersmanage
+    type: html5
+    path: app/workers-manage
     build-parameters:
       build-result: dist
       builder: custom
