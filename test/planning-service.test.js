@@ -46,14 +46,14 @@ describe("Planning service", () => {
   });
 
   it("returns customers with name and address expanded from visits", async () => {
-    const { status, data } =
-      await GET`/planning/Visits(ID=e79acf91-8eda-4fb7-9360-c1e5cf8a69ca,IsActiveEntity=true)?$expand=customer`;
+    const {
+      status,
+      data: { customer },
+    } = await GET`/planning/Visits(ID=e79acf91-8eda-4fb7-9360-c1e5cf8a69ca,IsActiveEntity=true)?$expand=customer`;
     expect(status).to.equal(200);
-    expect(data).to.contain({
-      customer: {
-        formattedName: "John Doe",
-        mainAddress_formatted: "Georg-Hermann-Allee 99, 14469 Potsdam, Germany",
-      },
+    expect(customer).to.contain({
+      formattedName: "Max Mustermann",
+      mainAddress_formatted: "Georg-Hermann-Allee 99, 14469 Potsdam, Germany",
     });
   });
 
@@ -64,10 +64,12 @@ describe("Planning service", () => {
   });
 
   it("returns workers with name expanded from tours", async () => {
-    const { status, data } =
-      await GET`/planning/Tours(ID=6466ef4a-fc3d-11ec-b939-0242ac120002,IsActiveEntity=true)?$expand=worker`;
+    const {
+      status,
+      data: { worker },
+    } = await GET`/planning/Tours(ID=6466ef4a-fc3d-11ec-b939-0242ac120002,IsActiveEntity=true)?$expand=worker`;
     expect(status).to.equal(200);
-    expect(data).to.contain({ worker: { formattedName: "John Doe" } });
+    expect(worker).to.contain({ formattedName: "John Doe" });
   });
 
   it("can create visits with computed duration", async () => {

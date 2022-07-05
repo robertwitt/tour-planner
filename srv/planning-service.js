@@ -4,7 +4,7 @@ const { StringBuilder } = require("./utils/strings");
 
 class PlanningService extends cds.ApplicationService {
   async init() {
-    const { Customers, Workers } = this.entities;
+    const { Customers, Tours, Visits, Workers } = this.entities;
 
     /**
      * Select additional columns required to compute fields in the customer.
@@ -20,6 +20,27 @@ class PlanningService extends cds.ApplicationService {
     });
 
     /**
+     * Select additional columns required to compute fields in the tour.
+     */
+    this.before("READ", Workers, (req) => {
+      this._select("firstName", req.query, "worker");
+      this._select("lastName", req.query, "worker");
+    });
+
+    /**
+     * Select additional columns required to compute fields in the visit.
+     */
+    this.before("READ", Visits, (req) => {
+      this._select("name1", req.query, "customer");
+      this._select("name2", req.query, "customer");
+      this._select("isNaturalPerson", req.query, "customer");
+      this._select("mainAddress_addressLine", req.query, "customer");
+      this._select("mainAddress_postalCode", req.query, "customer");
+      this._select("mainAddress_city", req.query, "customer");
+      this._select("mainAddress_country_name", req.query, "customer");
+    });
+
+    /**
      * Select additional columns required to compute fields in the worker.
      */
     this.before("READ", Workers, (req) => {
@@ -30,35 +51,57 @@ class PlanningService extends cds.ApplicationService {
     /**
      * Compute read-only fields in the customer.
      */
-    this.after("READ", Customers, (results, req) => {
-      if (isProjected(req.query.SELECT.columns, "formattedName")) {
-        this._setCustomerName(results, req.query);
-      }
-      if (isProjected(req.query.SELECT.columns, "mainAddress_formatted")) {
-        this._setCustomerAddress(results, req.query);
-      }
+    this.after("READ", Customers, (results) => {
+      this._setCustomerName(results);
+      this._setCustomerAddress(results);
+    });
+
+    /**
+     * Compute read-only fields in the tour.
+     */
+    this.after("READ", Tours, (results) => {
+      results = Array.isArray(results) ? results : [results];
+      results.forEach((r) => {
+        this._setWorkerName(r.worker);
+      });
+    });
+
+    /**
+     * Compute read-only fields in visit.
+     */
+    this.after("READ", Visits, (results) => {
+      results = Array.isArray(results) ? results : [results];
+      results.forEach((r) => {
+        this._setCustomerName(r.customer);
+        this._setCustomerAddress(r.customer);
+      });
     });
 
     /**
      * Compute read-only fields in the worker.
      */
-    this.after("READ", Workers, (results, req) => {
-      if (isProjected(req.query.SELECT.columns, "formattedName")) {
-        this._setWorkerName(results, req.query);
-      }
+    this.after("READ", Workers, (results) => {
+      this._setWorkerName(results);
     });
 
     await super.init();
   }
 
-  _select(column, query) {
-    if (!isProjected(query.SELECT.columns, column)) {
+  _select(column, query, expand) {
+    if (isProjected(query.SELECT.columns, column, expand)) {
+      return;
+    }
+    if (expand) {
+      query.columns((b) => {
+        b[expand]((e) => e[column]);
+      });
+    } else {
       query.columns(column);
     }
   }
 
-  _setCustomerName(customers, query) {
-    this._setComputedProperty("formattedName", customers, query, (c) => {
+  _setCustomerName(customers) {
+    this._setComputedProperty(customers, (c) => {
       if (c.isNaturalPerson) {
         c.formattedName = new StringBuilder()
           .add(c.name2)
@@ -73,28 +116,23 @@ class PlanningService extends cds.ApplicationService {
     });
   }
 
-  _setCustomerAddress(customers, query) {
-    this._setComputedProperty(
-      "mainAddress_formatted",
-      customers,
-      query,
-      (c) => {
-        c.mainAddress_formatted = new StringBuilder()
-          .add(c.mainAddress_addressLine)
-          .add(
-            new StringBuilder()
-              .add(c.mainAddress_postalCode)
-              .add(c.mainAddress_city)
-              .build(" ")
-          )
-          .add(c.mainAddress_country_name)
-          .build(", ");
-      }
-    );
+  _setCustomerAddress(customers) {
+    this._setComputedProperty(customers, (c) => {
+      c.mainAddress_formatted = new StringBuilder()
+        .add(c.mainAddress_addressLine)
+        .add(
+          new StringBuilder()
+            .add(c.mainAddress_postalCode)
+            .add(c.mainAddress_city)
+            .build(" ")
+        )
+        .add(c.mainAddress_country_name)
+        .build(", ");
+    });
   }
 
-  _setWorkerName(workers, query) {
-    this._setComputedProperty("formattedName", workers, query, (w) => {
+  _setWorkerName(workers) {
+    this._setComputedProperty(workers, (w) => {
       w.formattedName = new StringBuilder()
         .add(w.firstName)
         .add(w.lastName)
@@ -102,10 +140,7 @@ class PlanningService extends cds.ApplicationService {
     });
   }
 
-  _setComputedProperty(property, results, query, setter) {
-    if (!query.SELECT || !isProjected(query.SELECT.columns, property)) {
-      return;
-    }
+  _setComputedProperty(results, setter) {
     results = Array.isArray(results) ? results : [results];
     results.forEach(setter);
   }
