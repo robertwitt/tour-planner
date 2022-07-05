@@ -7,3 +7,9 @@ entity Countries as projection on cds.Countries excluding {
 };
 
 type Country : Association to one Countries;
+
+entity ExecutionStatuses : cds.CodeList {
+  key code : String(1);
+}
+
+type ExecutionStatus : Association to one ExecutionStatuses;

@@ -1,0 +1,9 @@
+code,locale,name
+O,en,open
+O,de,offen
+P,en,in progress
+P,de,in Arbeit
+C,en,completed
+C,de,abgeschlossen
+X,en,cancelled
+X,de,abgebrochen
