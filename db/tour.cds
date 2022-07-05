@@ -11,13 +11,12 @@ using {rwitt.tour.masterdata.Workers} from './worker';
 entity Tours : cuid, managed {
   worker   : Association to one Workers;
   tourDate : Date;
-  status   : ExecutionStatus;
+  status   : ExecutionStatus default 'I';
   stops    : Composition of many TourStops
                on stops.tour = $self;
 }
 
-entity TourStops {
-  key tour    : Association to one Tours;
-  key counter : Integer;
-      visit   : Association to one Visits;
+entity TourStops : cuid {
+  tour  : Association to one Tours;
+  visit : Association to one Visits;
 }

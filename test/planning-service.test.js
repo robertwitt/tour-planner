@@ -167,17 +167,23 @@ describe("Planning service", () => {
     );
     expect(status).to.equal(201);
     const { data } =
-      await GET`/planning/Tours(ID=${draft.ID},IsActiveEntity=true)?$expand=stops`;
+      await GET`/planning/Tours(ID=${draft.ID},IsActiveEntity=true)?$expand=stops($expand=visit)`;
     expect(data).to.contain({
       tourDate: "2022-07-22",
       stops: [
-        { counter: 1, visit_ID: "b9866484-1811-496e-bb0e-f0124a68c74a" },
-        { counter: 2, visit_ID: "1b0d6519-1fbf-44fd-9bf3-cf08739503cc" },
+        {
+          visit_ID: "b9866484-1811-496e-bb0e-f0124a68c74a",
+          visit: { status_code: "O" },
+        },
+        {
+          visit_ID: "1b0d6519-1fbf-44fd-9bf3-cf08739503cc",
+          visit: { status_code: "O" },
+        },
       ],
     });
   });
 
-  it("can add stop to existing tours", async () => {
+  it("can add stops to existing tours", async () => {
     await EDIT(
       `/planning/Tours(ID=6466ef4a-fc3d-11ec-b939-0242ac120002,IsActiveEntity=true)`
     );
@@ -190,12 +196,18 @@ describe("Planning service", () => {
     );
     expect(status).to.equal(201);
     const { data } =
-      await GET`/planning/Tours(ID=6466ef4a-fc3d-11ec-b939-0242ac120002,IsActiveEntity=true)?$expand=stops`;
+      await GET`/planning/Tours(ID=6466ef4a-fc3d-11ec-b939-0242ac120002,IsActiveEntity=true)?$expand=stops($expand=visit)`;
     expect(data).to.contain({
       tourDate: "2022-07-06",
       stops: [
-        { counter: 1, visit_ID: "42619951-0e05-45cc-b7cc-025674309164" },
-        { counter: 2, visit_ID: "4841bc74-d95b-4721-922c-cfa64bd7604d" },
+        {
+          visit_ID: "42619951-0e05-45cc-b7cc-025674309164",
+          visit: { status_code: "O" },
+        },
+        {
+          visit_ID: "4841bc74-d95b-4721-922c-cfa64bd7604d",
+          visit: { status_code: "O" },
+        },
       ],
     });
   });
