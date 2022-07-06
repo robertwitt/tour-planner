@@ -2,13 +2,6 @@ const cds = require("@sap/cds");
 const { ExecutionStatus } = require("./model/executionStatus");
 const { Visit } = require("./model/visit");
 const { isSelected } = require("./utils/cqn");
-const {
-  durationInHours,
-  dateTime,
-  isValidDateTimeRange,
-  time,
-  dateTimePlusHours,
-} = require("./utils/date");
 const { StringBuilder } = require("./utils/strings");
 
 class PlanningService extends cds.ApplicationService {
@@ -89,7 +82,6 @@ class PlanningService extends cds.ApplicationService {
     });
 
     /**
-     * Reset a visit's end-time if the start-time was changed.
      */
     this.before("PATCH", Visits, async (req) => {
       const data = req.data;
@@ -102,28 +94,19 @@ class PlanningService extends cds.ApplicationService {
         .columns("visitDate", "duration");
       const { visitDate, duration } = await this.tx(req).run(query);
 
-      data.endTime = time(
-        dateTimePlusHours(dateTime(visitDate, data.startTime), duration)
-      );
+      const visit = new Visit({ visitDate, duration, ...data });
+      data.endTime = visit.endTime;
     });
 
     /**
      * Set computed valued when creating or updating visits.
      */
     this.before(["CREATE", "UPDATE"], Visits, (req) => {
-      const data = req.data;
-
-      if (
-        !this._isValidDateRange(data.visitDate, data.startTime, data.endTime)
-      ) {
+      const visit = new Visit(req.data);
+      if (!visit.isValid) {
         return req.reject(400, "Start time must be lower or equal to end time");
       }
-
-      data.duration = this._calculateDuration(
-        data.visitDate,
-        data.startTime,
-        data.endTime
-      );
+      req.data.duration = visit.duration;
     });
 
     /**
@@ -229,17 +212,6 @@ class PlanningService extends cds.ApplicationService {
     } else {
       query.columns(column);
     }
-  }
-
-  _isValidDateRange(date, startTime, endTime) {
-    return isValidDateTimeRange(
-      dateTime(date, startTime),
-      dateTime(date, endTime)
-    );
-  }
-
-  _calculateDuration(date, startTime, endTime) {
-    return durationInHours(dateTime(date, startTime), dateTime(date, endTime));
   }
 
   _setCustomerName(customers) {
