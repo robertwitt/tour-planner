@@ -11,7 +11,7 @@ using {rwitt.tour.masterdata.Workers} from './worker';
 entity Tours : cuid, managed {
   worker   : Association to one Workers;
   tourDate : Date;
-  status   : ExecutionStatus default 'I';
+  status   : ExecutionStatus;
   stops    : Composition of many TourStops
                on stops.tour = $self;
 }

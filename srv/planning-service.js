@@ -1,7 +1,7 @@
 const cds = require("@sap/cds");
-const { DateTime, Interval } = require("luxon");
 const { ExecutionStatus } = require("./model/executionStatus");
 const { isProjected } = require("./utils/cqn");
+const { durationInHours, dateTime } = require("./utils/date");
 const { StringBuilder } = require("./utils/strings");
 
 class PlanningService extends cds.ApplicationService {
@@ -103,9 +103,7 @@ class PlanningService extends cds.ApplicationService {
   }
 
   _calculateDuration(date, startTime, endTime) {
-    const start = DateTime.fromISO(`${date}T${startTime}`);
-    const end = DateTime.fromISO(`${date}T${endTime}`);
-    return Interval.fromDateTimes(start, end).length("hours");
+    return durationInHours(dateTime(date, startTime), dateTime(date, endTime));
   }
 
   _select(column, query, expand) {
