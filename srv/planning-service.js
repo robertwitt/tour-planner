@@ -1,6 +1,6 @@
 const cds = require("@sap/cds");
 const { ExecutionStatus } = require("./model/executionStatus");
-const { isProjected } = require("./utils/cqn");
+const { isSelected } = require("./utils/cqn");
 const {
   durationInHours,
   dateTime,
@@ -19,12 +19,12 @@ class PlanningService extends cds.ApplicationService {
      */
     this.before("READ", Customers, (req) => {
       const query = req.query;
-      if (isProjected(query.SELECT.columns, "formattedName")) {
+      if (isSelected(query.SELECT.columns, "formattedName")) {
         this._select("name1", query);
         this._select("name2", query);
         this._select("isNaturalPerson", query);
       }
-      if (isProjected(query.SELECT.columns, "mainAddress_formatted")) {
+      if (isSelected(query.SELECT.columns, "mainAddress_formatted")) {
         this._select("mainAddress_addressLine", query);
         this._select("mainAddress_postalCode", query);
         this._select("mainAddress_city", query);
@@ -37,7 +37,7 @@ class PlanningService extends cds.ApplicationService {
      */
     this.before("READ", Tours, (req) => {
       const query = req.query;
-      if (isProjected(query.SELECT.columns, "formattedName", "worker")) {
+      if (isSelected(query.SELECT.columns, "formattedName", "worker")) {
         this._select("firstName", query, "worker");
         this._select("lastName", query, "worker");
       }
@@ -48,13 +48,13 @@ class PlanningService extends cds.ApplicationService {
      */
     this.before("READ", Visits, (req) => {
       const query = req.query;
-      if (isProjected(query.SELECT.columns, "formattedName", "customer")) {
+      if (isSelected(query.SELECT.columns, "formattedName", "customer")) {
         this._select("name1", query, "customer");
         this._select("name2", query, "customer");
         this._select("isNaturalPerson", query, "customer");
       }
       if (
-        isProjected(query.SELECT.columns, "mainAddress_formatted", "customer")
+        isSelected(query.SELECT.columns, "mainAddress_formatted", "customer")
       ) {
         this._select("mainAddress_addressLine", query, "customer");
         this._select("mainAddress_postalCode", query, "customer");
@@ -110,7 +110,7 @@ class PlanningService extends cds.ApplicationService {
      */
     this.before("READ", Workers, (req) => {
       const query = req.query;
-      if (isProjected(query.SELECT.columns, "formattedName")) {
+      if (isSelected(query.SELECT.columns, "formattedName")) {
         this._select("firstName", query);
         this._select("lastName", query);
       }
@@ -120,10 +120,10 @@ class PlanningService extends cds.ApplicationService {
      * Compute read-only fields in the customer.
      */
     this.after("READ", Customers, (results, req) => {
-      if (isProjected(req.query.SELECT.columns, "formattedName")) {
+      if (isSelected(req.query.SELECT.columns, "formattedName")) {
         this._setCustomerName(results);
       }
-      if (isProjected(req.query.SELECT.columns, "mainAddress_formatted")) {
+      if (isSelected(req.query.SELECT.columns, "mainAddress_formatted")) {
         this._setCustomerAddress(results);
       }
     });
@@ -132,7 +132,7 @@ class PlanningService extends cds.ApplicationService {
      * Compute read-only fields in the tour.
      */
     this.after("READ", Tours, (results, req) => {
-      if (isProjected(req.query.SELECT.columns, "formattedName", "worker")) {
+      if (isSelected(req.query.SELECT.columns, "formattedName", "worker")) {
         results = Array.isArray(results) ? results : [results];
         results.forEach((r) => {
           this._setWorkerName(r.worker);
@@ -144,12 +144,12 @@ class PlanningService extends cds.ApplicationService {
      * Compute read-only fields in visit.
      */
     this.after("READ", Visits, (results, req) => {
-      const isNameSelected = isProjected(
+      const isNameSelected = isSelected(
         req.query.SELECT.columns,
         "formattedName",
         "customer"
       );
-      const isAddressSelected = isProjected(
+      const isAddressSelected = isSelected(
         req.query.SELECT.columns,
         "mainAddress_formatted",
         "customer"
@@ -169,7 +169,7 @@ class PlanningService extends cds.ApplicationService {
      * Compute read-only fields in the worker.
      */
     this.after("READ", Workers, (results, req) => {
-      if (isProjected(req.query.SELECT.columns, "formattedName")) {
+      if (isSelected(req.query.SELECT.columns, "formattedName")) {
         this._setWorkerName(results);
       }
     });
@@ -178,7 +178,7 @@ class PlanningService extends cds.ApplicationService {
   }
 
   _select(column, query, expand) {
-    if (isProjected(query.SELECT.columns, column, expand)) {
+    if (isSelected(query.SELECT.columns, column, expand)) {
       return;
     }
     if (expand) {
