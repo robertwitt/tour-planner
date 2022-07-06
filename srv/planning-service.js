@@ -22,7 +22,7 @@ class PlanningService extends cds.ApplicationService {
     /**
      * Select additional columns required to compute fields in the tour.
      */
-    this.before("READ", Workers, (req) => {
+    this.before("READ", Tours, (req) => {
       this._select("firstName", req.query, "worker");
       this._select("lastName", req.query, "worker");
     });
