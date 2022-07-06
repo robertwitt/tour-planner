@@ -1,2 +1,3 @@
 ID,name1,name2,isNaturalPerson,mainAddress_country_code,mainAddress_city,mainAddress_postalCode,mainAddress_addressLine,billingAddress_country_code,billingAddress_city,billingAddress_postalCode,billingAddress_addressLine,isArchived
 20627858-46e5-4d15-88fd-286d15cbd193,Mustermann,Max,true,DE,Potsdam,14469,Georg-Hermann-Allee 99,DE,Potsdam,14469,Friedrich-Ebert-Str. 19,false
+f127bc00-fc53-11ec-b939-0242ac120002,SAP Innovation Center,,false,DE,Potsdam,14469,Konrad-Zuse-Ring 10,DE,,,,false

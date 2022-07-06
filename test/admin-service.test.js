@@ -1,27 +1,7 @@
 const { DateTime } = require("luxon");
-const cds = require("@sap/cds/lib");
-const { GET, POST, PATCH, DELETE, axios, expect } = cds.test(__dirname + "/..");
-const EDIT = (url) => POST(`${url}/draftEdit`, {});
-const SAVE = (url) => POST(`${url}/draftActivate`);
-
-if (cds.User.default) {
-  cds.User.default = cds.User.Privileged;
-} else {
-  cds.User = cds.User.Privileged;
-}
+const { GET, POST, PATCH, DELETE, EDIT, SAVE, expect } = require("./utils");
 
 describe("Admin service", () => {
-  let validateStatus;
-
-  beforeAll(() => {
-    validateStatus = axios.defaults.validateStatus;
-    axios.defaults.validateStatus = () => true;
-  });
-
-  afterAll(() => {
-    axios.defaults.validateStatus = validateStatus;
-  });
-
   it("returns a list of countries", async () => {
     const { status, data } = await GET`/admin/Countries`;
     expect(status).to.equal(200);

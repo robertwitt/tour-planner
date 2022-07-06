@@ -1,5 +1,5 @@
-const { DateTime } = require("luxon");
 const cds = require("@sap/cds");
+const { isValidDateTimeRange, today } = require("./utils/date");
 
 const MAX_END_DATE = "9999-12-31";
 
@@ -22,8 +22,7 @@ class AdminService extends cds.ApplicationService {
      */
     this.before("CREATE", Workers, (req) => {
       const data = req.data;
-      data.startDate =
-        data.startDate || data.endDate || DateTime.now().toISODate();
+      data.startDate = data.startDate || data.endDate || today();
       data.endDate = data.endDate || MAX_END_DATE;
     });
 
@@ -35,7 +34,7 @@ class AdminService extends cds.ApplicationService {
       if (!startDate || !endDate) {
         return req.reject(400, "Start date and end date are mandatory");
       }
-      if (!this._isValidDateRange(startDate, endDate)) {
+      if (!isValidDateTimeRange(startDate, endDate)) {
         return req.reject(400, "Start date must be lower or equal to end date");
       }
     });
@@ -59,10 +58,6 @@ class AdminService extends cds.ApplicationService {
     });
 
     await super.init();
-  }
-
-  _isValidDateRange(startDate, endDate) {
-    return DateTime.fromISO(startDate) <= DateTime.fromISO(endDate);
   }
 }
 

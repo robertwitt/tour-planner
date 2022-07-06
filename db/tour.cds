@@ -16,8 +16,7 @@ entity Tours : cuid, managed {
                on stops.tour = $self;
 }
 
-entity TourStops {
-  key tour    : Association to one Tours;
-  key counter : Integer;
-      visit   : Association to one Visits;
+entity TourStops : cuid {
+  tour  : Association to one Tours;
+  visit : Association to one Visits;
 }
