@@ -1,7 +1,11 @@
 const cds = require("@sap/cds");
 const { ExecutionStatus } = require("./model/executionStatus");
 const { isProjected } = require("./utils/cqn");
-const { durationInHours, dateTime } = require("./utils/date");
+const {
+  durationInHours,
+  dateTime,
+  isValidDateTimeRange,
+} = require("./utils/date");
 const { StringBuilder } = require("./utils/strings");
 
 class PlanningService extends cds.ApplicationService {
@@ -47,6 +51,13 @@ class PlanningService extends cds.ApplicationService {
      */
     this.before("CREATE", Visits, (req) => {
       const data = req.data;
+
+      if (
+        !this._isValidDateRange(data.visitDate, data.startTime, data.endTime)
+      ) {
+        return req.reject(400, "Start time must be lower or equal to end time");
+      }
+
       data.duration = this._calculateDuration(
         data.visitDate,
         data.startTime,
@@ -102,10 +113,6 @@ class PlanningService extends cds.ApplicationService {
     await super.init();
   }
 
-  _calculateDuration(date, startTime, endTime) {
-    return durationInHours(dateTime(date, startTime), dateTime(date, endTime));
-  }
-
   _select(column, query, expand) {
     if (isProjected(query.SELECT.columns, column, expand)) {
       return;
@@ -117,6 +124,17 @@ class PlanningService extends cds.ApplicationService {
     } else {
       query.columns(column);
     }
+  }
+
+  _isValidDateRange(date, startTime, endTime) {
+    return isValidDateTimeRange(
+      dateTime(date, startTime),
+      dateTime(date, endTime)
+    );
+  }
+
+  _calculateDuration(date, startTime, endTime) {
+    return durationInHours(dateTime(date, startTime), dateTime(date, endTime));
   }
 
   _setCustomerName(customers) {
