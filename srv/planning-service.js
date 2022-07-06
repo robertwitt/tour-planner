@@ -1,5 +1,6 @@
 const cds = require("@sap/cds");
 const { ExecutionStatus } = require("./model/executionStatus");
+const { Visit } = require("./model/visit");
 const { isSelected } = require("./utils/cqn");
 const {
   durationInHours,
@@ -70,6 +71,26 @@ class PlanningService extends cds.ApplicationService {
       req.data.status_code = ExecutionStatus.STATUS_INITIAL;
     });
 
+    /**
+     * Validate a visit's status before editing it.
+     */
+    this.before("EDIT", Visits, async (req) => {
+      const visits = await req.query;
+      if (!visits.length) {
+        return req.reject(404);
+      }
+
+      if (new Visit(visits[0]).isClosed) {
+        return req.reject(
+          400,
+          "Completed or cancelled visits cannot be edited anymore."
+        );
+      }
+    });
+
+    /**
+     * Reset a visit's end-time if the start-time was changed.
+     */
     this.before("PATCH", Visits, async (req) => {
       const data = req.data;
       if (!data.startTime || (data.startTime && data.endTime)) {
@@ -103,6 +124,26 @@ class PlanningService extends cds.ApplicationService {
         data.startTime,
         data.endTime
       );
+    });
+
+    /**
+     * Prohibit deletion of closed visits.
+     */
+    this.before("DELETE", Visits, async (req) => {
+      const query = SELECT.one
+        .from(req.query.DELETE.from)
+        .columns("status_code");
+      const visit = await this.tx(req).run(query);
+      if (!visit) {
+        return req.reject(404);
+      }
+
+      if (new Visit(visit).isClosed) {
+        return req.reject(
+          400,
+          "Completed or cancelled visits cannot be edited anymore."
+        );
+      }
     });
 
     /**
