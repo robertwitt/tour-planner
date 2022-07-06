@@ -1,4 +1,4 @@
-const { expect } = require("chai");
+const { expect } = require("../utils");
 const { StringBuilder } = require("../../srv/utils/strings");
 
 describe("String builder", () => {
