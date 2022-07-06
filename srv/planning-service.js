@@ -68,7 +68,7 @@ class PlanningService extends cds.ApplicationService {
      * Validate a visit's status before editing it.
      */
     this.before("EDIT", Visits, async (req) => {
-      const visits = await req.query;
+      const visits = await req.query.clone();
       if (!visits.length) {
         return req.reject(404);
       }
@@ -82,6 +82,7 @@ class PlanningService extends cds.ApplicationService {
     });
 
     /**
+     * Reset a visit's end-time if the start-time was changed.
      */
     this.before("PATCH", Visits, async (req) => {
       const data = req.data;

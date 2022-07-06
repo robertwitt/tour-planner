@@ -9,7 +9,7 @@ const { ExecutionStatus } = require("./executionStatus");
 
 class Visit {
   constructor(data) {
-    this._data = data;
+    this._data = { ...data };
   }
 
   get duration() {
