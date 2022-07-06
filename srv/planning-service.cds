@@ -42,11 +42,7 @@ service PlanningService {
 
   annotate ExecutionStatuses with @(readonly);
   entity Visits            as projection on db.transaction.Visits;
-
-  annotate Visits with @(
-    Capabilities.FilterRestrictions.NonFilterableProperties : [duration],
-    odata.draft.enabled
-  );
+  annotate Visits with @(odata.draft.enabled);
 
   annotate Visits with {
     customer  @mandatory;

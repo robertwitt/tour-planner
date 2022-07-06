@@ -72,7 +72,7 @@ describe("Planning service", () => {
     expect(worker).to.contain({ formattedName: "John Doe" });
   });
 
-  it("can create visits with computed duration", async () => {
+  it("can create visits with computed duration and default status", async () => {
     const { data: draft } = await POST(`/planning/Visits`, {
       customer_ID: "20627858-46e5-4d15-88fd-286d15cbd193",
       visitDate: "2022-08-03",
@@ -90,7 +90,7 @@ describe("Planning service", () => {
       startTime: "08:00:00",
       endTime: "10:30:00",
       duration: 2.5,
-      status_code: "O",
+      status_code: "I",
     });
   });
 
@@ -195,6 +195,7 @@ describe("Planning service", () => {
       await GET`/planning/Tours(ID=${draft.ID},IsActiveEntity=true)?$expand=stops($expand=visit)`;
     expect(data).to.contain({
       tourDate: "2022-07-22",
+      status_code: "I",
       stops: [
         {
           visit_ID: "b9866484-1811-496e-bb0e-f0124a68c74a",

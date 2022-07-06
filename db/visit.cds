@@ -13,5 +13,5 @@ entity Visits : cuid, managed {
   startTime : Time;
   endTime   : Time;
   duration  : Decimal(4, 2);
-  status    : ExecutionStatus default 'I';
+  status    : ExecutionStatus;
 }

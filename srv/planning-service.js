@@ -1,4 +1,6 @@
 const cds = require("@sap/cds");
+const { DateTime, Interval } = require("luxon");
+const { ExecutionStatus } = require("./model/executionStatus");
 const { isProjected } = require("./utils/cqn");
 const { StringBuilder } = require("./utils/strings");
 
@@ -38,6 +40,19 @@ class PlanningService extends cds.ApplicationService {
       this._select("mainAddress_postalCode", req.query, "customer");
       this._select("mainAddress_city", req.query, "customer");
       this._select("mainAddress_country_name", req.query, "customer");
+    });
+
+    /**
+     * Set default values when creating visits.
+     */
+    this.before("CREATE", Visits, (req) => {
+      const data = req.data;
+      data.duration = this._calculateDuration(
+        data.visitDate,
+        data.startTime,
+        data.endTime
+      );
+      data.status_code = ExecutionStatus.STATUS_INITIAL;
     });
 
     /**
@@ -85,6 +100,12 @@ class PlanningService extends cds.ApplicationService {
     });
 
     await super.init();
+  }
+
+  _calculateDuration(date, startTime, endTime) {
+    const start = DateTime.fromISO(`${date}T${startTime}`);
+    const end = DateTime.fromISO(`${date}T${endTime}`);
+    return Interval.fromDateTimes(start, end).length("hours");
   }
 
   _select(column, query, expand) {
