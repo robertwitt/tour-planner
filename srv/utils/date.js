@@ -11,6 +11,16 @@ function dateTime(date, time) {
 }
 
 /**
+ * Adds a duration in hours to a given date-time and returns the new value.
+ * @param {string} dateTime an ISO date-time string
+ * @param {number} hours a duration in hours
+ * @returns a date-time string
+ */
+function dateTimePlusHours(dateTime, hours) {
+  return DateTime.fromISO(dateTime).plus({ hours }).toISO();
+}
+
+/**
  * Calculates and returns the duration between a start and end date-time in hours.
  * @param {string} start a date-time string
  * @param {end} end a date-time string
@@ -33,6 +43,15 @@ function isValidDateTimeRange(start, end) {
 }
 
 /**
+ * Returns the time part from a date-time string.
+ * @param {string} dateTime a date-time string
+ * @returns the time as string
+ */
+function time(dateTime) {
+  return dateTime.slice(11, 19);
+}
+
+/**
  * Returns today's date as ISO date.
  * @returns today's date in ISO format
  */
@@ -40,4 +59,11 @@ function today() {
   return DateTime.now().toISODate();
 }
 
-module.exports = { dateTime, durationInHours, isValidDateTimeRange, today };
+module.exports = {
+  dateTime,
+  dateTimePlusHours,
+  durationInHours,
+  isValidDateTimeRange,
+  time,
+  today,
+};

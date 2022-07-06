@@ -5,6 +5,8 @@ const {
   durationInHours,
   dateTime,
   isValidDateTimeRange,
+  time,
+  dateTimePlusHours,
 } = require("./utils/date");
 const { StringBuilder } = require("./utils/strings");
 
@@ -16,40 +18,78 @@ class PlanningService extends cds.ApplicationService {
      * Select additional columns required to compute fields in the customer.
      */
     this.before("READ", Customers, (req) => {
-      this._select("name1", req.query);
-      this._select("name2", req.query);
-      this._select("isNaturalPerson", req.query);
-      this._select("mainAddress_addressLine", req.query);
-      this._select("mainAddress_postalCode", req.query);
-      this._select("mainAddress_city", req.query);
-      this._select("mainAddress_country_name", req.query);
+      const query = req.query;
+      if (isProjected(query.SELECT.columns, "formattedName")) {
+        this._select("name1", query);
+        this._select("name2", query);
+        this._select("isNaturalPerson", query);
+      }
+      if (isProjected(query.SELECT.columns, "mainAddress_formatted")) {
+        this._select("mainAddress_addressLine", query);
+        this._select("mainAddress_postalCode", query);
+        this._select("mainAddress_city", query);
+        this._select("mainAddress_country_name", query);
+      }
     });
 
     /**
      * Select additional columns required to compute fields in the tour.
      */
     this.before("READ", Tours, (req) => {
-      this._select("firstName", req.query, "worker");
-      this._select("lastName", req.query, "worker");
+      const query = req.query;
+      if (isProjected(query.SELECT.columns, "formattedName", "worker")) {
+        this._select("firstName", query, "worker");
+        this._select("lastName", query, "worker");
+      }
     });
 
     /**
      * Select additional columns required to compute fields in the visit.
      */
     this.before("READ", Visits, (req) => {
-      this._select("name1", req.query, "customer");
-      this._select("name2", req.query, "customer");
-      this._select("isNaturalPerson", req.query, "customer");
-      this._select("mainAddress_addressLine", req.query, "customer");
-      this._select("mainAddress_postalCode", req.query, "customer");
-      this._select("mainAddress_city", req.query, "customer");
-      this._select("mainAddress_country_name", req.query, "customer");
+      const query = req.query;
+      if (isProjected(query.SELECT.columns, "formattedName", "customer")) {
+        this._select("name1", query, "customer");
+        this._select("name2", query, "customer");
+        this._select("isNaturalPerson", query, "customer");
+      }
+      if (
+        isProjected(query.SELECT.columns, "mainAddress_formatted", "customer")
+      ) {
+        this._select("mainAddress_addressLine", query, "customer");
+        this._select("mainAddress_postalCode", query, "customer");
+        this._select("mainAddress_city", query, "customer");
+        this._select("mainAddress_country_name", query, "customer");
+      }
     });
 
     /**
      * Set default values when creating visits.
      */
     this.before("CREATE", Visits, (req) => {
+      req.data.status_code = ExecutionStatus.STATUS_INITIAL;
+    });
+
+    this.before("PATCH", Visits, async (req) => {
+      const data = req.data;
+      if (!data.startTime || (data.startTime && data.endTime)) {
+        return;
+      }
+
+      const query = SELECT.one
+        .from(req.query.UPDATE.entity)
+        .columns("visitDate", "duration");
+      const { visitDate, duration } = await this.tx(req).run(query);
+
+      data.endTime = time(
+        dateTimePlusHours(dateTime(visitDate, data.startTime), duration)
+      );
+    });
+
+    /**
+     * Set computed valued when creating or updating visits.
+     */
+    this.before(["CREATE", "UPDATE"], Visits, (req) => {
       const data = req.data;
 
       if (
@@ -63,51 +103,75 @@ class PlanningService extends cds.ApplicationService {
         data.startTime,
         data.endTime
       );
-      data.status_code = ExecutionStatus.STATUS_INITIAL;
     });
 
     /**
      * Select additional columns required to compute fields in the worker.
      */
     this.before("READ", Workers, (req) => {
-      this._select("firstName", req.query);
-      this._select("lastName", req.query);
+      const query = req.query;
+      if (isProjected(query.SELECT.columns, "formattedName")) {
+        this._select("firstName", query);
+        this._select("lastName", query);
+      }
     });
 
     /**
      * Compute read-only fields in the customer.
      */
-    this.after("READ", Customers, (results) => {
-      this._setCustomerName(results);
-      this._setCustomerAddress(results);
+    this.after("READ", Customers, (results, req) => {
+      if (isProjected(req.query.SELECT.columns, "formattedName")) {
+        this._setCustomerName(results);
+      }
+      if (isProjected(req.query.SELECT.columns, "mainAddress_formatted")) {
+        this._setCustomerAddress(results);
+      }
     });
 
     /**
      * Compute read-only fields in the tour.
      */
-    this.after("READ", Tours, (results) => {
-      results = Array.isArray(results) ? results : [results];
-      results.forEach((r) => {
-        this._setWorkerName(r.worker);
-      });
+    this.after("READ", Tours, (results, req) => {
+      if (isProjected(req.query.SELECT.columns, "formattedName", "worker")) {
+        results = Array.isArray(results) ? results : [results];
+        results.forEach((r) => {
+          this._setWorkerName(r.worker);
+        });
+      }
     });
 
     /**
      * Compute read-only fields in visit.
      */
-    this.after("READ", Visits, (results) => {
+    this.after("READ", Visits, (results, req) => {
+      const isNameSelected = isProjected(
+        req.query.SELECT.columns,
+        "formattedName",
+        "customer"
+      );
+      const isAddressSelected = isProjected(
+        req.query.SELECT.columns,
+        "mainAddress_formatted",
+        "customer"
+      );
       results = Array.isArray(results) ? results : [results];
       results.forEach((r) => {
-        this._setCustomerName(r.customer);
-        this._setCustomerAddress(r.customer);
+        if (isNameSelected) {
+          this._setCustomerName(r.customer);
+        }
+        if (isAddressSelected) {
+          this._setCustomerAddress(r.customer);
+        }
       });
     });
 
     /**
      * Compute read-only fields in the worker.
      */
-    this.after("READ", Workers, (results) => {
-      this._setWorkerName(results);
+    this.after("READ", Workers, (results, req) => {
+      if (isProjected(req.query.SELECT.columns, "formattedName")) {
+        this._setWorkerName(results);
+      }
     });
 
     await super.init();
